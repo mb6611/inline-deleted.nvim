@@ -127,8 +127,6 @@ inline_deleted.setup(opts)
 -- Toggle display on/off
 inline_deleted.toggle()
 
--- Force refresh current buffer
-inline_deleted.refresh()
 
 -- Expand collapsed hunk at cursor
 inline_deleted.expand()

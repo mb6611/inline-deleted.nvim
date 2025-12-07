@@ -90,11 +90,8 @@ function M.toggle()
   M.enabled = not M.enabled
 
   if M.enabled then
-    vim.notify("Inline deleted: enabled", vim.log.levels.INFO)
     M.refresh()
   else
-    vim.notify("Inline deleted: disabled", vim.log.levels.INFO)
-    -- Clear all extmarks from current buffer
     render.clear()
   end
 end
