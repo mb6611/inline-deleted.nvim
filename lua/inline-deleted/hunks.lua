@@ -49,17 +49,14 @@ function M.get_deleted_hunks(bufnr)
     -- Gitsigns hunk structure: { type = "delete"|"change"|"add", removed = { start, count, lines }, added = { start, count } }
     -- Check if this hunk has deleted lines
     if hunk.removed and hunk.removed.lines and #hunk.removed.lines > 0 then
-      -- For deletions, position them at the line where deletion occurred
-      -- For changes, position at the start of the added section
-      local position_line = hunk.added.start
+      -- Calculate position in CURRENT buffer where deleted lines should appear
+      -- hunk.added.start points to where new content starts (or where gap is for deletions)
+      -- We want to show deleted lines just before that position
+      local position_line = hunk.added.start - 1
 
-      -- If it's a pure deletion (no added lines), position at the line before deletion
-      if hunk.type == "delete" then
-        position_line = hunk.removed.start - 1
-        -- Ensure we don't go negative
-        if position_line < 0 then
-          position_line = 0
-        end
+      -- Ensure we don't go negative (edge case: deletion at very start of file)
+      if position_line < 0 then
+        position_line = 0
       end
 
       table.insert(deleted_hunks, {
