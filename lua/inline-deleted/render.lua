@@ -1,22 +1,21 @@
 -- render.lua - Extmark rendering for deleted lines
+local state = require("inline-deleted.state")
+local constants = require("inline-deleted.constants")
+
 local M = {}
 
 -- Namespace for extmarks
-local ns_id = vim.api.nvim_create_namespace("inline_deleted")
-
--- State tracking for collapsed hunks per buffer
--- Format: { [bufnr] = { [start_line] = true/false } }
-M.collapsed_state = {}
+local ns_id = vim.api.nvim_create_namespace(constants.Namespace)
 
 --- Initialize highlight groups
 function M.init_highlights()
-  vim.api.nvim_set_hl(0, "InlineDeleted", { fg = "#ff6b6b", default = true })
-  vim.api.nvim_set_hl(0, "InlineDeletedMarker", { fg = "#666666", default = true })
-  vim.api.nvim_set_hl(0, "InlineDeletedCollapsed", { fg = "#888888", italic = true, default = true })
+  vim.api.nvim_set_hl(0, constants.Highlights.DELETED, { fg = "#ff6b6b", default = true })
+  vim.api.nvim_set_hl(0, constants.Highlights.MARKER, { fg = "#666666", default = true })
+  vim.api.nvim_set_hl(0, constants.Highlights.COLLAPSED, { fg = "#888888", italic = true, default = true })
 end
 
 --- Clear all extmarks for a buffer
---- @param bufnr number Buffer number
+--- @param bufnr number? Buffer number (defaults to current buffer)
 function M.clear(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
 
@@ -25,9 +24,6 @@ function M.clear(bufnr)
   end
 
   vim.api.nvim_buf_clear_namespace(bufnr, ns_id, 0, -1)
-
-  -- Clear collapsed state for this buffer
-  M.collapsed_state[bufnr] = nil
 end
 
 --- Render a collapsed indicator for a hunk
@@ -52,7 +48,7 @@ function M.render_collapsed(bufnr, line, count)
 
   vim.api.nvim_buf_set_extmark(bufnr, ns_id, line, 0, {
     virt_lines = {
-      { { text, "InlineDeletedCollapsed" } }
+      { { text, constants.Highlights.COLLAPSED } }
     },
     virt_lines_above = false,
   })
@@ -69,12 +65,8 @@ function M.render_hunks(bufnr, hunks, config)
     return
   end
 
-  -- Initialize collapsed state for this buffer if needed
-  if not M.collapsed_state[bufnr] then
-    M.collapsed_state[bufnr] = {}
-  end
-
   local line_count = vim.api.nvim_buf_line_count(bufnr)
+  local collapsed_state = state.get_collapsed(bufnr)
 
   for _, hunk in ipairs(hunks) do
     local start_line = hunk.start_line
@@ -88,13 +80,11 @@ function M.render_hunks(bufnr, hunks, config)
       local should_collapse = num_lines > config.max_lines_expanded
 
       -- Check if user has explicitly expanded this hunk
-      local is_expanded = M.collapsed_state[bufnr][start_line] == true
+      local is_expanded = collapsed_state[start_line] == true
 
       if should_collapse and not is_expanded then
         -- Render collapsed indicator
         M.render_collapsed(bufnr, start_line, num_lines)
-        -- Mark as collapsed in state
-        M.collapsed_state[bufnr][start_line] = false
       else
         -- Render all deleted lines
         local virt_lines = {}
@@ -102,8 +92,8 @@ function M.render_hunks(bufnr, hunks, config)
         for _, line_text in ipairs(lines) do
           -- Create virtual line with marker and deleted text
           table.insert(virt_lines, {
-            { config.line_marker, "InlineDeletedMarker" },
-            { config.prefix .. line_text, "InlineDeleted" }
+            { config.line_marker, constants.Highlights.MARKER },
+            { config.prefix .. line_text, constants.Highlights.DELETED }
           })
         end
 
@@ -112,9 +102,6 @@ function M.render_hunks(bufnr, hunks, config)
           virt_lines = virt_lines,
           virt_lines_above = false,
         })
-
-        -- Mark as expanded in state (or not collapsed)
-        M.collapsed_state[bufnr][start_line] = is_expanded or not should_collapse
       end
     end
   end

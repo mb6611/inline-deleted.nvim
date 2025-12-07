@@ -30,7 +30,7 @@ A Neovim plugin that shows deleted git lines as inline virtual text below the de
 
 ```lua
 {
-  dir = "~/Desktop/code/inline-deleted.nvim",
+  "username/inline-deleted.nvim",
   dependencies = { "lewis6991/gitsigns.nvim" },
   event = { "BufReadPost", "BufNewFile" },
   opts = {},
@@ -45,7 +45,7 @@ A Neovim plugin that shows deleted git lines as inline virtual text below the de
 
 ```lua
 use {
-  "~/Desktop/code/inline-deleted.nvim",
+  "username/inline-deleted.nvim",
   requires = { "lewis6991/gitsigns.nvim" },
   config = function()
     require("inline-deleted").setup()
@@ -82,14 +82,18 @@ require("inline-deleted").setup({
 
 ### Commands
 
-- `:InlineDeletedToggle` - Toggle inline deleted lines display
-- `:InlineDeletedRefresh` - Force refresh inline deleted lines
-- `:InlineDeletedExpand` - Expand collapsed hunk at cursor
+| Command | Description |
+|---------|-------------|
+| `:InlineDeletedToggle` | Toggle display on/off |
+| `:InlineDeletedRefresh` | Force refresh |
+| `:InlineDeletedExpand` | Expand hunk at cursor |
 
-### Keybindings (default)
+### Keybindings
 
-- `<leader>gi` - Toggle inline deleted display
-- `<leader>ge` - Expand collapsed hunk at cursor
+| Key | Action |
+|-----|--------|
+| `<leader>gi` | Toggle inline deleted display |
+| `<leader>ge` | Expand collapsed hunk at cursor |
 
 ### Workflow
 
@@ -115,6 +119,25 @@ vim.api.nvim_set_hl(0, "InlineDeletedCollapsed", { fg = "#888888", italic = true
 2. **Virtual Text**: Uses Neovim's extmark API with `virt_lines` to render deleted lines
 3. **Auto-Refresh**: Automatically updates on buffer changes, saves, and gitsigns updates
 4. **State Management**: Tracks collapsed/expanded state per buffer and hunk
+
+## Architecture
+
+```
+lua/inline-deleted/
+├── init.lua        # Public API, commands, keymaps
+├── constants.lua   # Highlight groups, namespace
+├── state.lua       # Per-buffer state management
+├── hunks.lua       # Gitsigns integration
+├── render.lua      # Extmark rendering
+└── health.lua      # :checkhealth support
+```
+
+## Health Check
+
+Run `:checkhealth inline-deleted` to verify your setup. This checks:
+- Neovim version (>= 0.10 required)
+- gitsigns.nvim installation
+- gitsigns cache API availability
 
 ## API
 
