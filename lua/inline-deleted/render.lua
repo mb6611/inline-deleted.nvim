@@ -8,11 +8,11 @@ local M = {}
 local ns_id = vim.api.nvim_create_namespace(constants.Namespace)
 
 --- Initialize highlight groups
---- Links to existing highlight groups for proper theming support
+--- Uses sensible defaults; users can override by setting highlights before/after setup
 function M.init_highlights()
-  vim.api.nvim_set_hl(0, constants.Highlights.DELETED, { link = "DiffDelete", default = true })
-  vim.api.nvim_set_hl(0, constants.Highlights.MARKER, { link = "NonText", default = true })
-  vim.api.nvim_set_hl(0, constants.Highlights.COLLAPSED, { link = "Comment", default = true })
+  vim.api.nvim_set_hl(0, constants.Highlights.DELETED, { fg = "#ff6b6b", default = true })
+  vim.api.nvim_set_hl(0, constants.Highlights.MARKER, { fg = "#666666", default = true })
+  vim.api.nvim_set_hl(0, constants.Highlights.COLLAPSED, { fg = "#888888", italic = true, default = true })
 end
 
 --- Clear all extmarks for a buffer
