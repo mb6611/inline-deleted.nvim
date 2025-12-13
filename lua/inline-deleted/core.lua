@@ -12,6 +12,11 @@ local M = {}
 function M.should_activate(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
 
+  -- Check if buffer is valid
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return false
+  end
+
   if not state.get_enabled() then
     return false
   end
